@@ -273,6 +273,7 @@ static BOOL performPermissionsPass(NSString* permissionsArgument, NSString* simu
 		@"siri": @"kTCCServiceSiri",
 		@"speech": @"kTCCServiceSpeechRecognition",
 		@"userTracking": @"kTCCServiceUserTracking",
+		@"pasteboard": @"kTCCServicePasteboard",
 	};
 	
 	NSArray<NSString*>* parsedArguments = [permissionsArgument componentsSeparatedByString:@","];
@@ -324,6 +325,14 @@ static BOOL performPermissionsPass(NSString* permissionsArgument, NSString* simu
 		else if([permission isEqualToString:@"photos"])
 		{
 			assertStringInArrayValues(value, @[@"YES", @"NO", @"limited", @"unset"], -10, [NSString stringWithFormat:@"Error: Illegal value “%@” parsed for permission “%@”.", value, permission]);
+			
+			success = [SetServicePermission setPermisionStatus:value forService:argumentToAppleService[permission] bundleIdentifier:bundleIdentifier simulatorIdentifier:simulatorIdentifier operatingSystemVersion:operatingSystemFromSimulator(simulator) error:&err];
+			
+			needsSpringBoardRestart |= NO;
+		}
+		else if([permission isEqualToString:@"pasteboard"])
+		{
+			assertStringInArrayValues(value, @[@"YES", @"NO", @"unset"], -10, [NSString stringWithFormat:@"Error: Illegal value “%@” parsed for permission “%@”.", value, permission]);
 			
 			success = [SetServicePermission setPermisionStatus:value forService:argumentToAppleService[permission] bundleIdentifier:bundleIdentifier simulatorIdentifier:simulatorIdentifier operatingSystemVersion:operatingSystemFromSimulator(simulator) error:&err];
 			
@@ -508,6 +517,7 @@ int main(int argc, const char* argv[]) {
 						@"motion=YES|NO|unset",
 						@"notifications=YES|NO|critical|unset",
 						@"photos=YES|NO|limited|unset (“limited” supported on iOS/tvOS 14.0 and above)",
+						@"pasteboard=YES|NO",
 						@"reminders=YES|NO|unset",
 						@"siri=YES|NO|unset",
 						@"speech=YES|NO|unset",
