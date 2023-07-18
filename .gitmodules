@@ -1,6 +1,6 @@
 [submodule "homebrew-brew"]
 	path = homebrew-brew
-	url = git@github.com:aapng/homebrew-brew.git
+	url = git@github.com:2gis/homebrew-brew.git
 [submodule "ObjCCLIInfra"]
 	path = ObjCCLIInfra
 	url = git@github.com:wix/ObjCCLIInfra.git
