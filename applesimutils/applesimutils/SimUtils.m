@@ -171,7 +171,7 @@ static NSMutableArray<dispatch_block_t>* _blocks;
 }
 
 __attribute__((destructor))
-static void cleanup()
+static void cleanup(void)
 {
 	[_blocks enumerateObjectsUsingBlock:^(dispatch_block_t  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
 		obj();

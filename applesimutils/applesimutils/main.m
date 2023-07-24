@@ -56,7 +56,7 @@ static void shutdownSimulator(NSString* simulatorId)
 	[shutdownTask waitUntilExit];
 }
 
-static NSArray* simulatorDevicesList()
+static NSArray* simulatorDevicesList(void)
 {
 	LNLog(LNLogLevelDebug, @"Obtaining simulator device list");
 	
@@ -114,7 +114,7 @@ static NSArray* simulatorDevicesList()
 	return allDevices;
 }
 
-static NSPredicate* predicateByBooted()
+static NSPredicate* predicateByBooted(void)
 {
 	return [NSPredicate predicateWithFormat:@"state ==[c] %@", @"Booted"];
 }
