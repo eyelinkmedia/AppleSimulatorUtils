@@ -77,7 +77,19 @@ const NSTimeInterval AppleSimUtilsRetryTimeout = 30.0f;
 
 + (NSURL*)URLForSimulatorId:(NSString*)simulatorId
 {
-	return [[[NSURL fileURLWithPath:NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES).firstObject] URLByAppendingPathComponent:@"Developer/CoreSimulator/Devices/"] URLByAppendingPathComponent:simulatorId];
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    NSURL* developerDirectoryURL = [[NSURL fileURLWithPath:NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES).firstObject] URLByAppendingPathComponent:@"Developer/"];
+
+    NSURL* testingSimulatorsDirectoryURL = [developerDirectoryURL URLByAppendingPathComponent:@"XCTestDevices/"];
+    NSURL* testingSimulatorURL = [testingSimulatorsDirectoryURL URLByAppendingPathComponent:simulatorId];
+
+    if ([fileManager fileExistsAtPath:testingSimulatorURL.path]) {
+        return testingSimulatorURL;
+    }
+
+    NSURL* simulatorsDirectoryURL = [developerDirectoryURL URLByAppendingPathComponent:@"CoreSimulator/Devices/"];
+    NSURL* simulatorURL = [simulatorsDirectoryURL URLByAppendingPathComponent:simulatorId];
+    return simulatorURL;
 }
 
 + (NSURL*)dataURLForSimulatorId:(NSString*)simulatorId

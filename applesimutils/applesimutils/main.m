@@ -56,13 +56,18 @@ static void shutdownSimulator(NSString* simulatorId)
 	[shutdownTask waitUntilExit];
 }
 
-static NSArray* simulatorDevicesList(void)
+static NSArray* simulatorDevicesList(BOOL useTestingDevices)
 {
 	LNLog(LNLogLevelDebug, @"Obtaining simulator device list");
 	
 	NSTask* listTask = [NSTask new];
 	listTask.launchPath = SimUtils.xcrunURL.path;
-	listTask.arguments = @[@"simctl", @"list", @"--json"];
+
+    if (useTestingDevices) {
+        listTask.arguments = @[@"simctl", @"--set", @"testing", @"list", @"--json"];
+    } else {
+        listTask.arguments = @[@"simctl", @"list", @"--json"];
+    }
 	
 	NSData* jsonData;
 	[listTask launchAndWaitUntilExitReturningStandardOutputData:&jsonData standardErrorData:NULL];
@@ -499,6 +504,7 @@ int main(int argc, const char* argv[]) {
 			[LNUsageOption optionWithName:@"matchFinger" valueRequirement:LNUsageOptionRequirementNone description:@"Approves a Touch ID authentication request with a matching finger"],
 			[LNUsageOption optionWithName:@"unmatchFinger" valueRequirement:LNUsageOptionRequirementNone description:@"Fails a Touch ID authentication request with a non-matching finger"],
 			[LNUsageOption optionWithName:@"paths" shortcut:@"p" valueRequirement:LNUsageOptionRequirementOptional description:@"Prints important paths for the selected simulator"],
+            [LNUsageOption optionWithName:@"useTestingDevices" shortcut:@"utd" valueRequirement:LNUsageOptionRequirementOptional description:@"Use testing devices. simctl --set testing"]
 		]);
 		
 		LNUsageSetAdditionalTopics(@[
@@ -562,7 +568,8 @@ int main(int argc, const char* argv[]) {
 		
 		@try
 		{
-			NSArray* simulatorDevices = simulatorDevicesList();
+            BOOL useTestingDevices = [settings objectForKey:@"useTestingDevices"] != nil;
+			NSArray* simulatorDevices = simulatorDevicesList(useTestingDevices);
 			
 			if(simulatorDevices == nil)
 			{
