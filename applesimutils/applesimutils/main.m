@@ -260,7 +260,11 @@ static NSOperatingSystemVersion operatingSystemFromSimulator(NSDictionary* simul
 	return rv;
 }
 
-static BOOL performPermissionsPass(NSString* permissionsArgument, NSString* simulatorIdentifier, NSString* bundleIdentifier, NSDictionary* simulator)
+static BOOL performPermissionsPass(NSString* permissionsArgument,
+                                   NSString* simulatorIdentifier,
+                                   NSString* bundleIdentifier,
+                                   NSDictionary* simulator,
+                                   BOOL useTestingDevices)
 {
 	LNLog(LNLogLevelDebug, @"Performing permission pass");
 	
@@ -323,7 +327,11 @@ static BOOL performPermissionsPass(NSString* permissionsArgument, NSString* simu
 		{
 			assertStringInArrayValues(value, @[@"never", @"always", @"inuse", @"unset"], -10, [NSString stringWithFormat:@"Error: Illegal value “%@” parsed for permission “%@”.", value, permission]);
 			
-			success = [SetLocationPermission setLocationPermission:value forBundleIdentifier:bundleIdentifier simulatorIdentifier:simulatorIdentifier error:&err];
+			success = [SetLocationPermission setLocationPermission:value
+                                               forBundleIdentifier:bundleIdentifier
+                                               simulatorIdentifier:simulatorIdentifier
+                                                 useTestingDevices:useTestingDevices
+                                                             error:&err];
 			
 			needsSpringBoardRestart |= NO;
 		}
@@ -781,7 +789,7 @@ int main(int argc, const char* argv[]) {
 						exit(-2);
 					}
 					
-					needsSpringBoardRestart = performPermissionsPass(permissions, simulatorId, bundleId, simulator);
+					needsSpringBoardRestart = performPermissionsPass(permissions, simulatorId, bundleId, simulator, useTestingDevices);
 				}
 				
 				if([settings boolForKey:@"clearKeychain"])

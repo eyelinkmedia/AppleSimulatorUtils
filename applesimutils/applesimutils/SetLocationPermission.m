@@ -9,14 +9,18 @@
 #import "SetLocationPermission.h"
 #import "SimUtils.h"
 
-static void startStopLocationdCtl(NSString* simulatorId, BOOL stop)
+static void startStopLocationdCtl(NSString* simulatorId, BOOL useTestingDevices, BOOL stop)
 {
 	NSURL *locationdDaemonURL = [SetLocationPermission locationdURL];
 	NSCAssert(locationdDaemonURL != nil, @"Launch daemon “com.apple.locationd” not found. Please open an issue.");
 	
 	NSTask* rebootTask = [NSTask new];
 	rebootTask.launchPath = [SimUtils xcrunURL].path;
-	rebootTask.arguments = @[@"simctl", @"spawn", simulatorId, @"launchctl", stop ? @"unload" : @"load", locationdDaemonURL.path];
+    if (useTestingDevices) {
+        rebootTask.arguments = @[@"simctl", @"--set", @"testing", @"spawn", simulatorId, @"launchctl", stop ? @"unload" : @"load", locationdDaemonURL.path];
+    } else {
+        rebootTask.arguments = @[@"simctl", @"spawn", simulatorId, @"launchctl", stop ? @"unload" : @"load", locationdDaemonURL.path];
+    }
 	[rebootTask launch];
 	[rebootTask waitUntilExit];
 }
@@ -33,7 +37,11 @@ static void startStopLocationdCtl(NSString* simulatorId, BOOL stop)
 	return locationdDaemonURL;
 }
 
-+ (BOOL)setLocationPermission:(NSString*)permission forBundleIdentifier:(NSString*)bundleIdentifier simulatorIdentifier:(NSString*)simulatorId error:(NSError**)error
++ (BOOL)setLocationPermission:(NSString*)permission
+          forBundleIdentifier:(NSString*)bundleIdentifier
+          simulatorIdentifier:(NSString*)simulatorId
+            useTestingDevices:(BOOL)useTestingDevices
+                        error:(NSError**)error
 {
 	LNLog(LNLogLevelDebug, @"Setting location permission");
 	
@@ -86,11 +94,11 @@ static void startStopLocationdCtl(NSString* simulatorId, BOOL stop)
 		locationClients[bundleIdentifier] = bundlePermissions;
 	}
 	
-	startStopLocationdCtl(simulatorId, YES);
+	startStopLocationdCtl(simulatorId, useTestingDevices, YES);
 	
 	[[NSPropertyListSerialization dataWithPropertyList:locationClients format:NSPropertyListBinaryFormat_v1_0 options:0 error:NULL] writeToURL:plistURL atomically:YES];
 	
-	startStopLocationdCtl(simulatorId, NO);
+	startStopLocationdCtl(simulatorId, useTestingDevices, NO);
 	
 	return YES;
 }

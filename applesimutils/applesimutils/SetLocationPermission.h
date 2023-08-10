@@ -12,6 +12,10 @@
 
 + (NSURL*)locationdURL;
 
-+ (BOOL)setLocationPermission:(NSString*)permission forBundleIdentifier:(NSString*)bundleIdentifier simulatorIdentifier:(NSString*)simulatorId error:(NSError**)error;
++ (BOOL)setLocationPermission:(NSString*)permission
+          forBundleIdentifier:(NSString*)bundleIdentifier
+          simulatorIdentifier:(NSString*)simulatorId
+            useTestingDevices:(BOOL)useTestingDevices
+                        error:(NSError**)error;
 
 @end
