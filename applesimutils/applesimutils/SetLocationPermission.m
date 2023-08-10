@@ -84,7 +84,7 @@ static void startStopLocationdCtl(NSString* simulatorId, BOOL useTestingDevices,
 		bundlePermissions[@"BundleId"] = bundleIdentifier;
 		bundlePermissions[@"Whitelisted"] = @NO;
 		
-		NSURL* binaryURL = [SimUtils binaryURLForBundleId:bundleIdentifier simulatorId:simulatorId];
+		NSURL* binaryURL = [SimUtils binaryURLForBundleId:bundleIdentifier simulatorId:simulatorId useTestingDevices:useTestingDevices];
 		NSString* path = binaryURL != nil ? binaryURL.path : @"";
 		
 		bundlePermissions[@"Executable"] = path;

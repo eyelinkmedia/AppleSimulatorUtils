@@ -22,19 +22,27 @@ static char* const __version =
 #include "version.h"
 ;
 
-static void bootSimulator(NSString* simulatorId)
+static void bootSimulator(NSString* simulatorId, BOOL useTestingDevices)
 {
 	LNLog(LNLogLevelDebug, @"Booting simulator “%@”", simulatorId);
 	
 	NSTask* bootTask = [NSTask new];
 	bootTask.launchPath = [SimUtils xcrunURL].path;
-	bootTask.arguments = @[@"simctl", @"boot", simulatorId];
+    if (useTestingDevices) {
+        bootTask.arguments = @[@"simctl", @"--set", @"testing", @"boot", simulatorId];
+    } else {
+        bootTask.arguments = @[@"simctl", @"boot", simulatorId];
+    }
 	[bootTask launch];
 	
 	NSTask* bootStatusTask = [NSTask new];
 	bootStatusTask.launchPath = [SimUtils xcrunURL].path;
-	bootStatusTask.arguments = @[@"simctl", @"bootstatus", simulatorId];
-	
+    if (useTestingDevices) {
+        bootStatusTask.arguments = @[@"simctl", @"--set", @"testing", @"bootstatus", simulatorId];
+    } else {
+        bootStatusTask.arguments = @[@"simctl", @"bootstatus", simulatorId];
+    }
+
 	NSPipe* devNullPipe = [NSPipe new];
 	bootStatusTask.standardOutput = devNullPipe;
 	bootStatusTask.standardError = devNullPipe;
@@ -45,13 +53,17 @@ static void bootSimulator(NSString* simulatorId)
 	[bootTask waitUntilExit];
 }
 
-static void shutdownSimulator(NSString* simulatorId)
+static void shutdownSimulator(NSString* simulatorId, BOOL useTestingDevices)
 {
 	LNLog(LNLogLevelDebug, @"Shutting down simulator “%@”", simulatorId);
 	
 	NSTask* shutdownTask = [NSTask new];
 	shutdownTask.launchPath = [SimUtils xcrunURL].path;
-	shutdownTask.arguments = @[@"simctl", @"shutdown", simulatorId];
+    if (useTestingDevices) {
+        shutdownTask.arguments = @[@"simctl", @"--set", @"testing", @"shutdown", simulatorId];
+    } else {
+        shutdownTask.arguments = @[@"simctl", @"shutdown", simulatorId];
+    }
 	[shutdownTask launch];
 	[shutdownTask waitUntilExit];
 }
@@ -720,7 +732,7 @@ int main(int argc, const char* argv[]) {
 					}
 					
 					NSString* bundleId = [settings objectForKey:@"bundle"];
-					if(bundleId != nil && (url = [SimUtils binaryURLForBundleId:bundleId simulatorId:simulatorId]).path != nil)
+					if(bundleId != nil && (url = [SimUtils binaryURLForBundleId:bundleId simulatorId:simulatorId useTestingDevices:useTestingDevices]).path != nil)
 					{
 						simPaths[@"App Binary Path"] = url.path;
 					}
@@ -773,7 +785,7 @@ int main(int argc, const char* argv[]) {
 				{
 					needsSimShutdown = YES;
 					
-					bootSimulator(simulatorId);
+					bootSimulator(simulatorId, useTestingDevices);
 				}
 				
 				BOOL needsSpringBoardRestart = NO;
@@ -794,14 +806,14 @@ int main(int argc, const char* argv[]) {
 				
 				if([settings boolForKey:@"clearKeychain"])
 				{
-					performClearKeychainPass(simulatorId);
+					performClearKeychainPass(simulatorId, useTestingDevices);
 					
 					needsSpringBoardRestart = YES;
 				}
 				
 				if([settings boolForKey:@"clearMedia"])
 				{
-					performClearMediaPass(simulatorId);
+					performClearMediaPass(simulatorId, useTestingDevices);
 					
 					needsSpringBoardRestart = YES;
 				}
@@ -846,12 +858,12 @@ int main(int argc, const char* argv[]) {
 				
 				if(needsSpringBoardRestart == YES && needsSimShutdown == NO)
 				{
-					[SimUtils restartSpringBoardForSimulatorId:simulatorId];
+					[SimUtils restartSpringBoardForSimulatorId:simulatorId useTestingDevices:useTestingDevices];
 				}
 				
 				if(needsSimShutdown == YES)
 				{
-					shutdownSimulator(simulatorId);
+					shutdownSimulator(simulatorId, useTestingDevices);
 				}
 			}];
 		}

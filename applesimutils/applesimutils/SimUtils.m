@@ -102,11 +102,15 @@ const NSTimeInterval AppleSimUtilsRetryTimeout = 30.0f;
 	return [[self dataURLForSimulatorId:simulatorId] URLByAppendingPathComponent:@"Library/"];
 }
 
-+ (NSURL *)binaryURLForBundleId:(NSString*)bundleId simulatorId:(NSString*)simulatorId
++ (NSURL *)binaryURLForBundleId:(NSString*)bundleId simulatorId:(NSString*)simulatorId useTestingDevices:(BOOL)useTestingDevices
 {
 	NSTask* getBundlePathTask = [NSTask new];
 	getBundlePathTask.launchPath = [self xcrunURL].path;
-	getBundlePathTask.arguments = @[@"simctl", @"get_app_container", simulatorId, bundleId, @"app"];
+    if (useTestingDevices) {
+        getBundlePathTask.arguments = @[@"simctl", @"--set", @"testing", @"get_app_container", simulatorId, bundleId, @"app"];
+    } else {
+        getBundlePathTask.arguments = @[@"simctl", @"get_app_container", simulatorId, bundleId, @"app"];
+    }
 	
 	NSString* bundlePath;
 	if(0 != [getBundlePathTask launchAndWaitUntilExitReturningStandardOutput:&bundlePath standardRrror:NULL])
@@ -162,11 +166,15 @@ const NSTimeInterval AppleSimUtilsRetryTimeout = 30.0f;
 	return locationdDaemonURL;
 }
 
-+ (void)restartSpringBoardForSimulatorId:(NSString*)simulatorId
++ (void)restartSpringBoardForSimulatorId:(NSString*)simulatorId useTestingDevices:(BOOL)useTestingDevices
 {
 	NSTask* respringTask = [NSTask new];
 	respringTask.launchPath = [SimUtils xcrunURL].path;
-	respringTask.arguments = @[@"simctl", @"spawn", simulatorId, @"launchctl", @"stop", @"com.apple.SpringBoard"];
+    if (useTestingDevices) {
+        respringTask.arguments = @[@"simctl", @"--set", @"testing", @"spawn", simulatorId, @"launchctl", @"stop", @"com.apple.SpringBoard"];
+    } else {
+        respringTask.arguments = @[@"simctl", @"spawn", simulatorId, @"launchctl", @"stop", @"com.apple.SpringBoard"];
+    }
 	[respringTask launch];
 	[respringTask waitUntilExit];
 }

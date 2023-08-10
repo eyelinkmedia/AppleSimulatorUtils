@@ -17,9 +17,9 @@ extern const NSTimeInterval AppleSimUtilsRetryTimeout;
 + (NSURL*)URLForSimulatorId:(NSString*)simulatorId;
 + (NSURL*)dataURLForSimulatorId:(NSString*)simulatorId;
 + (NSURL*)libraryURLForSimulatorId:(NSString*)simulatorId;
-+ (NSURL*)binaryURLForBundleId:(NSString*)bundleId simulatorId:(NSString*)simulatorId;
++ (NSURL*)binaryURLForBundleId:(NSString*)bundleId simulatorId:(NSString*)simulatorId useTestingDevices:(BOOL)useTestingDevices;
 + (NSURL*)launchDaemonPlistURLForDaemon:(NSString*)daemon;
-+ (void)restartSpringBoardForSimulatorId:(NSString*)simulatorId;
++ (void)restartSpringBoardForSimulatorId:(NSString*)simulatorId useTestingDevices:(BOOL)useTestingDevices;
 
 + (void)registerCleanupBlock:(dispatch_block_t)block;
 

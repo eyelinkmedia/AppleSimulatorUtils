@@ -19,23 +19,27 @@ extern NSURL* assetsdURL(void)
 	return assetsdURL;
 }
 
-static void assetsdCtl(NSString* simulatorId, BOOL stop)
+static void assetsdCtl(NSString* simulatorId, BOOL useTestingDevices, BOOL stop)
 {
 	NSURL *locationdDaemonURL = assetsdURL();
 	NSCAssert(locationdDaemonURL != nil, @"Launch daemon “com.apple.mobileassetd” not found. Please open an issue.");
 	
 	NSTask* rebootTask = [NSTask new];
 	rebootTask.launchPath = SimUtils.xcrunURL.path;
-	rebootTask.arguments = @[@"simctl", @"spawn", simulatorId, @"launchctl", stop ? @"unload" : @"load", locationdDaemonURL.path];
+    if (useTestingDevices) {
+        rebootTask.arguments = @[@"simctl", @"--set", @"testing", @"spawn", simulatorId, @"launchctl", stop ? @"unload" : @"load", locationdDaemonURL.path];
+    } else {
+        rebootTask.arguments = @[@"simctl", @"spawn", simulatorId, @"launchctl", stop ? @"unload" : @"load", locationdDaemonURL.path];
+    }
 	[rebootTask launch];
 	[rebootTask waitUntilExit];
 }
 
-void performClearMediaPass(NSString* simulatorIdentifier)
+void performClearMediaPass(NSString* simulatorIdentifier, BOOL useTestingDevices)
 {
-	assetsdCtl(simulatorIdentifier, YES);
+	assetsdCtl(simulatorIdentifier, useTestingDevices, YES);
 	NSURL* mediaURL = [[SimUtils dataURLForSimulatorId:simulatorIdentifier] URLByAppendingPathComponent:@"Media"];
 	[NSFileManager.defaultManager removeItemAtURL:[mediaURL URLByAppendingPathComponent:@"DCIM"] error:NULL];
 	[NSFileManager.defaultManager removeItemAtURL:[mediaURL URLByAppendingPathComponent:@"PhotoData"] error:NULL];
-	assetsdCtl(simulatorIdentifier, NO);
+	assetsdCtl(simulatorIdentifier, useTestingDevices, NO);
 }

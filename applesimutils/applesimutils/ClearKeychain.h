@@ -10,4 +10,4 @@
 
 extern NSURL* securitydURL(void);
 
-extern void performClearKeychainPass(NSString* simulatorIdentifier);
+extern void performClearKeychainPass(NSString* simulatorIdentifier, BOOL useTestingDevices);

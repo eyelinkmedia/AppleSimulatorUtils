@@ -19,26 +19,30 @@ extern NSURL* securitydURL(void)
 	return securitydDaemonURL;
 }
 
-static void securitydCtl(NSString* simulatorId, BOOL stop)
+static void securitydCtl(NSString* simulatorId, BOOL useTestingDevices, BOOL stop)
 {
 	NSURL *locationdDaemonURL = securitydURL();
 	NSCAssert(locationdDaemonURL != nil, @"Launch daemon “com.apple.securityd” not found. Please open an issue.");
 	
 	NSTask* rebootTask = [NSTask new];
 	rebootTask.launchPath = SimUtils.xcrunURL.path;
-	rebootTask.arguments = @[@"simctl", @"spawn", simulatorId, @"launchctl", stop ? @"unload" : @"load", locationdDaemonURL.path];
+    if (useTestingDevices) {
+        rebootTask.arguments = @[@"simctl", @"--set", @"testing", @"spawn", simulatorId, @"launchctl", stop ? @"unload" : @"load", locationdDaemonURL.path];
+    } else {
+        rebootTask.arguments = @[@"simctl", @"spawn", simulatorId, @"launchctl", stop ? @"unload" : @"load", locationdDaemonURL.path];
+    }
 	[rebootTask launch];
 	[rebootTask waitUntilExit];
 }
 
-void performClearKeychainPass(NSString* simulatorIdentifier)
+void performClearKeychainPass(NSString* simulatorIdentifier, BOOL useTestingDevices)
 {
-	securitydCtl(simulatorIdentifier, YES);
+	securitydCtl(simulatorIdentifier, useTestingDevices, YES);
 	
 	NSURL* keychainDirURL = [[SimUtils libraryURLForSimulatorId:simulatorIdentifier] URLByAppendingPathComponent:@"Keychains"];
 	[[NSFileManager.defaultManager contentsOfDirectoryAtURL:keychainDirURL includingPropertiesForKeys:nil options:0 error:NULL] enumerateObjectsUsingBlock:^(NSURL * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
 		[NSFileManager.defaultManager removeItemAtURL:obj error:NULL];
 	}];
 	
-	securitydCtl(simulatorIdentifier, NO);
+	securitydCtl(simulatorIdentifier, useTestingDevices, NO);
 }
